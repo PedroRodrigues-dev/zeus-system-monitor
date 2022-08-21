@@ -24,11 +24,8 @@ go build main.go
 Utilizando insomnia ou qualquer ferramenta de sua preferência utilize:
 [GET] http://localhost:8080/configs -> para visualizar todas as configurações.
 [GET] http://localhost:8080/configs/:name -> para visualizar uma configuração específica.
-[PUT] http://localhost:8080/configs/:name -> para editar uma configuração específica.
-PUT json body:
-{
-    "value": "90"
-}
+[PUT] http://localhost:8080/configs/:name -> para editar uma configuração específica.</br>
+PUT json body: { "value": "90" }
 
 **Por: Pedro Rodrigues**
 ![Badge Github](https://img.shields.io/github/followers/PedroRodrigues-dev?style=social)
