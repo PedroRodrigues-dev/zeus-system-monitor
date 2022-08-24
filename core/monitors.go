@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"time"
+	"zeus/api/controllers"
 	"zeus/scripts"
 
 	"github.com/shirou/gopsutil/cpu"
@@ -34,6 +35,11 @@ func Monitors(option int) {
 			timeLastNotification = time.Now()
 			overload_counter = 0
 			Notificator(fmt.Sprintf(overloadMessage, percentLimit))
+		}
+
+		// Send data to websocket in real time
+		if controllers.WebsocketStarted {
+			WebsocketNotificator(percentAvg, option)
 		}
 
 		// Avoid overload by pausing the goroutine for 0.1 seconds

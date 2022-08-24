@@ -14,6 +14,7 @@ func Server() {
 
 	r := gin.Default()
 
+	r.GET("/zeus", controllers.Websocket)
 	r.GET("/configs", controllers.FindAllConfigs)
 	r.GET("/configs/:name", controllers.FindOneConfig)
 	r.PUT("/configs/:name", controllers.UpdateConfig)
