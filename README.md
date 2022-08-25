@@ -29,9 +29,9 @@ PUT json body: { "value": "90" }
 Resposta JSON:
 {"name":"nome_da_variavel", "value":"valor_da_variavel"}
 ## Websocket 
-Resposta tempo real JSON: [ws://localhost:8080/realtime]
+### Resposta tempo real JSON: [ws://localhost:8080/realtime]
 {"MonitorName":"nome_do_monitor", "Percent":"porcentagem"}
-Resposta para alertas JSON: [ws://localhost:8080/warning]
+### Resposta para alertas JSON: [ws://localhost:8080/warning]
 {"MonitorName":"nome_do_monitor", "WarningMessage":"mensagem_de_alerta"}
 # Configurações
 ## Variáveis de ambiente
