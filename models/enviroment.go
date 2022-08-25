@@ -11,9 +11,4 @@ type Enviroment struct {
 	DiskOverloadCounterLimit   int
 	DiskPercentLimit           int
 	DiskOverloadMessage        string
-	RabbitHost                 string
-	RabbitPort                 int
-	RabbitUser                 string
-	RabbitPassword             string
-	RabbitQueue                string
 }

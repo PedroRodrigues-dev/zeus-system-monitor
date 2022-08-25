@@ -1,0 +1,78 @@
+definitions:
+  models.Config:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+    type: object
+info:
+  contact:
+    email: pedroras004@gmail.com
+    name: Pedro Rodrigues
+  description: Real-time server resource monitor and overload notification
+  license:
+    name: MIT
+    url: https://mit-license.org
+  title: Zeus System Monitor API
+  version: v2.0.0
+paths:
+  /configs:
+    get:
+      description: Responds with the list of all configs as JSON.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Config'
+            type: array
+      summary: Get configs array
+      tags:
+      - configs
+  /configs/{name}:
+    get:
+      description: Responds with one config as JSON.
+      parameters:
+      - description: search config by name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Config'
+            type: array
+      summary: Get one config
+      tags:
+      - configs
+    put:
+      description: Responds with http status
+      parameters:
+      - description: update config by name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Config JSON
+        in: body
+        name: config
+        required: true
+        schema:
+          $ref: '#/definitions/models.Config'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Update a config
+      tags:
+      - configs
+swagger: "2.0"

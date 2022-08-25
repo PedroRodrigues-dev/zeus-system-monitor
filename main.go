@@ -6,12 +6,27 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"zeus/api"
 	"zeus/configs"
+	"zeus/controllers"
 	"zeus/core"
 	"zeus/scripts"
+
+	_ "zeus/docs"
+
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title     		Zeus System Monitor API
+// @version         v2.0.0
+// @description     Real-time server resource monitor and overload notification
+
+// @contact.name   	Pedro Rodrigues
+// @contact.email  	pedroras004@gmail.com
+
+// @license.name  	MIT
+// @license.url   	https://mit-license.org
 func main() {
 	// System logo
 	fmt.Println(` ------------------------------------------	
@@ -34,8 +49,9 @@ func main() {
 	scripts.DatabaseDefaults()
 	scripts.DefineEnviroment()
 
-	// Configure Rabbit
-	configs.StartRabbit(scripts.ENV.RabbitUser, scripts.ENV.RabbitPassword, scripts.ENV.RabbitHost, scripts.ENV.RabbitPort)
+	// Declare webserver
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.Default()
 
 	// Start monitors
 	infinit := make(chan bool)
@@ -43,14 +59,38 @@ func main() {
 		go core.Monitors(i)
 	}
 
+	// Swagger
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Websocekt
+	r.GET("/realtime", controllers.RealTimeWebsocket)
+	r.GET("/warning", controllers.WarningWebsocket)
+
+	// Api
+	r.GET("/configs", controllers.FindAllConfigs)
+	r.GET("/configs/:name", controllers.FindOneConfig)
+	r.PUT("/configs/:name", controllers.UpdateConfig)
+
+	// Sets the port by args or default
+	port := ":8080"
+	if len(os.Args) > 1 {
+		port = ":" + os.Args[1]
+	}
+
 	// System up and down notifications
 	log.Println("Initialized")
 	fmt.Println("[Initialized]")
 	notificateInterrupt()
 
-	// Start API
-	api.Server()
-
+	// Try to start the server and warn in case of error
+	err := r.Run(port)
+	if err != nil {
+		log.Printf("%s\n", err)
+		fmt.Printf("[%s]\n", err)
+		log.Println("Finalized")
+		fmt.Println("[Finalized]")
+		os.Exit(0)
+	}
 	<-infinit
 }
 

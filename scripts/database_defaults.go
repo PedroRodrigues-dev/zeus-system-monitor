@@ -18,11 +18,6 @@ func DatabaseDefaults() {
 		{Name: "DiskOverloadCounterLimit", Value: "30"},
 		{Name: "DiskPercentLimit", Value: "90"},
 		{Name: "DiskOverloadMessage", Value: "Disk with use above %d"},
-		{Name: "RabbitHost", Value: "localhost"},
-		{Name: "RabbitPort", Value: "5672"},
-		{Name: "RabbitUser", Value: "guest"},
-		{Name: "RabbitPassword", Value: "guest"},
-		{Name: "RabbitQueue", Value: "zeus"},
 	}
 
 	for i := range cfg {

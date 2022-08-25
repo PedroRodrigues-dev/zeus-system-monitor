@@ -38,16 +38,6 @@ func DefineEnviroment() {
 			env.DiskPercentLimit, _ = strconv.Atoi(config[i].Value)
 		case config[i].Name == "DiskOverloadMessage":
 			env.DiskOverloadMessage = config[i].Value
-		case config[i].Name == "RabbitHost":
-			env.RabbitHost = config[i].Value
-		case config[i].Name == "RabbitPort":
-			env.RabbitPort, _ = strconv.Atoi(config[i].Value)
-		case config[i].Name == "RabbitUser":
-			env.RabbitUser = config[i].Value
-		case config[i].Name == "RabbitPassword":
-			env.RabbitPassword = config[i].Value
-		case config[i].Name == "RabbitQueue":
-			env.RabbitQueue = config[i].Value
 		}
 	}
 

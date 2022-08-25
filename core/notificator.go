@@ -1,57 +1,57 @@
 package core
 
 import (
-	"context"
 	"log"
-	"time"
-	"zeus/api/controllers"
-	"zeus/configs"
+	"zeus/controllers"
 	"zeus/models"
-	"zeus/scripts"
-
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func Notificator(msg string) {
-	logging(msg)
+// 0 - cpu | 1 - memory | 2 - disk
+var lastRealTimeNotification = [3]models.WebsocketRealTime{}
 
-	// Check if rabbit is started
-	if configs.RabbitStarted {
-		rabbit(msg)
-	}
-}
-
-func logging(msg string) {
+func WarningLogging(msg string) {
 	log.Println(msg)
 }
 
-func rabbit(msg string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	configs.RabbitChannel.PublishWithContext(ctx, "", scripts.ENV.RabbitQueue, false, false,
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(msg),
-		})
-}
-
-func WebsocketNotificator(percent int, option int) {
+func WebsocketForWarningNotificator(msg string, option int) {
 	// Choose monitor
-	var monitorName string
-	switch {
-	case option == 0:
-		monitorName = "cpu"
-	case option == 1:
-		monitorName = "memory"
-	case option == 2:
-		monitorName = "disk"
-	}
+	monitorName := defineMonitorName(option)
 
 	// Create json response for websocket
-	var message models.WebsocketMessage
+	var message models.WebsocketForWarning
+	message.MonitorName = monitorName
+	message.WarningMessage = msg
+
+	// Send message to websocket channel
+	controllers.WebsocketForWarningChannel <- message
+}
+
+func WebsocketRealTimeNotificator(percent int, option int) {
+	// Choose monitor
+	monitorName := defineMonitorName(option)
+
+	// Create json response for websocket
+	var message models.WebsocketRealTime
 	message.MonitorName = monitorName
 	message.Percent = percent
 
-	// Add json to reference position in message array
-	controllers.Messages[option] = message
+	// Checks if current message is different from the previous one
+	if lastRealTimeNotification[option] != message {
+		lastRealTimeNotification[option] = message
+		// Send message to websocket channel
+		controllers.WebsocketRealTimeChannel <- message
+	}
+}
+
+func defineMonitorName(option int) string {
+	switch {
+	case option == 0:
+		return "cpu"
+	case option == 1:
+		return "memory"
+	case option == 2:
+		return "disk"
+	default:
+		return ""
+	}
 }
