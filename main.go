@@ -1,7 +1,9 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"html/template"
 	"log"
 	"os"
 	"os/signal"
@@ -18,9 +20,12 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+//go:embed pages/*
+var embeddedFiles embed.FS
+
 // @title     		Zeus System Monitor API
-// @version         v2.0.0
-// @description     Real-time server resource monitor and overload notification
+// @version         v3.0.0
+// @description     Real-time server resource monitor
 
 // @contact.name   	Pedro Rodrigues
 // @contact.email  	pedroras004@gmail.com
@@ -40,10 +45,6 @@ func main() {
 |  \$$$$$$$$ \$$$$$$$$  \$$$$$$   \$$$$$$  |	
  ------------------------------------------`)
 
-	// Define system logs
-	file, _ := os.OpenFile("system.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-	log.SetOutput(file)
-
 	// Configure database
 	configs.ConnectDatabase()
 	scripts.DatabaseDefaults()
@@ -62,14 +63,18 @@ func main() {
 	// Swagger
 	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Websocekt
-	r.GET("/realtime", controllers.RealTimeWebsocket)
-	r.GET("/warning", controllers.WarningWebsocket)
+	// Websocket
+	r.GET("/monitor", controllers.MonitorWebsocket)
 
 	// Api
 	r.GET("/configs", controllers.FindAllConfigs)
 	r.GET("/configs/:name", controllers.FindOneConfig)
 	r.PUT("/configs/:name", controllers.UpdateConfig)
+
+	// Pages
+	templ := template.Must(template.New("").ParseFS(embeddedFiles, "pages/*"))
+	r.SetHTMLTemplate(templ)
+	r.GET("/", controllers.MonitorsPage)
 
 	// Sets the port by args or default
 	port := ":8080"
@@ -79,16 +84,13 @@ func main() {
 
 	// System up and down notifications
 	log.Println("Initialized")
-	fmt.Println("[Initialized]")
 	notificateInterrupt()
 
 	// Try to start the server and warn in case of error
 	err := r.Run(port)
 	if err != nil {
 		log.Printf("%s\n", err)
-		fmt.Printf("[%s]\n", err)
 		log.Println("Finalized")
-		fmt.Println("[Finalized]")
 		os.Exit(0)
 	}
 	<-infinit
@@ -101,7 +103,6 @@ func notificateInterrupt() {
 	go func() {
 		<-c
 		log.Println("Finalized")
-		fmt.Println("\n[Finalized]")
 		os.Exit(0)
 	}()
 }

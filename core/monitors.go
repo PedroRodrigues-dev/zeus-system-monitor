@@ -1,9 +1,7 @@
 package core
 
 import (
-	"fmt"
 	"time"
-	"zeus/controllers"
 	"zeus/scripts"
 
 	"github.com/shirou/gopsutil/cpu"
@@ -12,53 +10,29 @@ import (
 )
 
 func Monitors(option int) {
-	// In process variables
-	timeLastNotification := time.Now()
-	overload_counter := 0
-
 	// In enviroment variables
 	var percentLimit int
-	var overloadCounterLimit int
 	var overloadMessage string
 
 	for {
 		// Choose which percentage to use
-		percentAvg := switcher(option, &percentLimit, &overloadCounterLimit, &overloadMessage)
+		percentAvg := switcher(option, &percentLimit, &overloadMessage)
 
-		// Checks if percentage exceeded the threshold
-		if percentAvg > percentLimit {
-			overload_counter += 1
-		}
-
-		// Checks if the notification should be sent
-		if overload_counter > overloadCounterLimit && time.Since(timeLastNotification) > time.Duration(scripts.ENV.TimeNotificationLimit*int(time.Second)) {
-			timeLastNotification = time.Now()
-			overload_counter = 0
-			message := fmt.Sprintf(overloadMessage, percentLimit)
-			WarningLogging(message)
-			if controllers.WebsocketForWarningStarted {
-				WebsocketForWarningNotificator(message, option)
-			}
-		}
-
-		// Send data to websocket in real time
-		if controllers.WebsocketRealTimeStarted {
-			WebsocketRealTimeNotificator(percentAvg, option)
-		}
+		// Send data to monitor websocket
+		MonitiorWebsocketNotificator(percentAvg, option)
 
 		// Avoid overload by pausing the goroutine for 0.1 seconds
 		time.Sleep(time.Duration(1e+9))
 	}
 }
 
-func switcher(option int, percentLimit *int, overloadCounterLimit *int, overloadMessage *string) int {
+func switcher(option int, percentLimit *int, overloadMessage *string) int {
 	// Define percentLimit, overloadCounterLimit and overloadMessage pointers and return percent now
 	switch {
 	// For CPU
 	case option == 0:
 		// Pointers
 		*percentLimit = scripts.ENV.CpuPercentLimit
-		*overloadCounterLimit = scripts.ENV.CpuOverloadCounterLimit
 		*overloadMessage = scripts.ENV.CpuOverloadMessage
 
 		// Require percents
@@ -75,7 +49,6 @@ func switcher(option int, percentLimit *int, overloadCounterLimit *int, overload
 	case option == 1:
 		// Pointers
 		*percentLimit = scripts.ENV.MemoryPercentLimit
-		*overloadCounterLimit = scripts.ENV.MemoryOverloadCounterLimit
 		*overloadMessage = scripts.ENV.MemoryOverloadMessage
 
 		// Percents
@@ -86,7 +59,6 @@ func switcher(option int, percentLimit *int, overloadCounterLimit *int, overload
 	case option == 2:
 		// Pointers
 		*percentLimit = scripts.ENV.DiskPercentLimit
-		*overloadCounterLimit = scripts.ENV.DiskOverloadCounterLimit
 		*overloadMessage = scripts.ENV.DiskOverloadMessage
 
 		// Percents

@@ -18,22 +18,14 @@ func DefineEnviroment() {
 	env := models.Enviroment{}
 	for i := range config {
 		switch {
-		case config[i].Name == "TimeNotificationLimit":
-			env.TimeNotificationLimit, _ = strconv.Atoi(config[i].Value)
-		case config[i].Name == "CpuOverloadCounterLimit":
-			env.CpuOverloadCounterLimit, _ = strconv.Atoi(config[i].Value)
 		case config[i].Name == "CpuPercentLimit":
 			env.CpuPercentLimit, _ = strconv.Atoi(config[i].Value)
 		case config[i].Name == "CpuOverloadMessage":
 			env.CpuOverloadMessage = config[i].Value
-		case config[i].Name == "MemoryOverloadCounterLimit":
-			env.MemoryOverloadCounterLimit, _ = strconv.Atoi(config[i].Value)
 		case config[i].Name == "MemoryPercentLimit":
 			env.MemoryPercentLimit, _ = strconv.Atoi(config[i].Value)
 		case config[i].Name == "MemoryOverloadMessage":
 			env.MemoryOverloadMessage = config[i].Value
-		case config[i].Name == "DiskOverloadCounterLimit":
-			env.DiskOverloadCounterLimit, _ = strconv.Atoi(config[i].Value)
 		case config[i].Name == "DiskPercentLimit":
 			env.DiskPercentLimit, _ = strconv.Atoi(config[i].Value)
 		case config[i].Name == "DiskOverloadMessage":

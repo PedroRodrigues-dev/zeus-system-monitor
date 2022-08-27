@@ -1,11 +1,8 @@
 package models
 
-type WebsocketRealTime struct {
+type MonitorMessage struct {
 	MonitorName string
 	Percent     int
-}
-
-type WebsocketForWarning struct {
-	MonitorName    string
-	WarningMessage string
+	IsOverload  bool
+	Alert       string
 }

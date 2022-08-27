@@ -1,57 +1,33 @@
 package core
 
 import (
-	"log"
 	"zeus/controllers"
 	"zeus/models"
+	"zeus/scripts"
 )
 
-// 0 - cpu | 1 - memory | 2 - disk
-var lastRealTimeNotification = [3]models.WebsocketRealTime{}
-
-func WarningLogging(msg string) {
-	log.Println(msg)
-}
-
-func WebsocketForWarningNotificator(msg string, option int) {
-	// Choose monitor
-	monitorName := defineMonitorName(option)
-
+func MonitiorWebsocketNotificator(percent int, option int) {
 	// Create json response for websocket
-	var message models.WebsocketForWarning
-	message.MonitorName = monitorName
-	message.WarningMessage = msg
-
-	// Send message to websocket channel
-	controllers.WebsocketForWarningChannel <- message
-}
-
-func WebsocketRealTimeNotificator(percent int, option int) {
-	// Choose monitor
-	monitorName := defineMonitorName(option)
-
-	// Create json response for websocket
-	var message models.WebsocketRealTime
-	message.MonitorName = monitorName
+	var message models.MonitorMessage
 	message.Percent = percent
-
-	// Checks if current message is different from the previous one
-	if lastRealTimeNotification[option] != message {
-		lastRealTimeNotification[option] = message
-		// Send message to websocket channel
-		controllers.WebsocketRealTimeChannel <- message
+	message.MonitorName, message.Alert, message.IsOverload = defineMonitorValues(option, percent)
+	if !message.IsOverload {
+		message.Alert = ""
 	}
+
+	// Send message to websocket
+	controllers.MonitorMessages[option] = message
 }
 
-func defineMonitorName(option int) string {
+func defineMonitorValues(option int, percent int) (string, string, bool) {
 	switch {
 	case option == 0:
-		return "cpu"
+		return "cpu", scripts.ENV.CpuOverloadMessage, percent >= scripts.ENV.CpuPercentLimit
 	case option == 1:
-		return "memory"
+		return "memory", scripts.ENV.MemoryOverloadMessage, percent >= scripts.ENV.MemoryPercentLimit
 	case option == 2:
-		return "disk"
+		return "disk", scripts.ENV.DiskOverloadMessage, percent >= scripts.ENV.DiskPercentLimit
 	default:
-		return ""
+		return "", "", false
 	}
 }
