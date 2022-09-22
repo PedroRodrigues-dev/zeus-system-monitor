@@ -1,0 +1,20 @@
+name: Intagration on sonarqube
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: SonarClound scan
+        uses: sonarsource/sonarcloud-github-action@master
+        with:
+          args: -X
+            -Dsonar.organization=dan-sillva
+            -Dsonar.projectKey=Dan-Sillva_zeus-system-monitor
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
